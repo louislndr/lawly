@@ -4,6 +4,12 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mic, MicOff, ArrowRight, Loader2 } from "lucide-react";
 
+const EXAMPLE_QUESTIONS = [
+  "My landlord kept my deposit. What can I do?",
+  "I was fired without notice. What are my rights?",
+  "I received a legal letter and I don't understand it.",
+  "My employer has not paid my last paycheck.",
+];
 
 type AnySR = new () => any;
 
@@ -19,6 +25,9 @@ export function ProblemForm() {
   const [error, setError] = useState("");
   const [listening, setListening] = useState(false);
   const [micError, setMicError] = useState("");
+  const [typedExample, setTypedExample] = useState("");
+  const [exampleIndex, setExampleIndex] = useState(0);
+  const [isDeletingExample, setIsDeletingExample] = useState(false);
   const srRef = useRef<any>(null);
   const problemRef = useRef(problem);
 
@@ -31,6 +40,36 @@ export function ProblemForm() {
       srRef.current?.abort?.();
     };
   }, []);
+
+  useEffect(() => {
+    if (problem || isLoading) return;
+
+    const current = EXAMPLE_QUESTIONS[exampleIndex];
+    const isComplete = typedExample === current;
+    const isEmpty = typedExample.length === 0;
+    const delay = isComplete ? 1400 : isDeletingExample ? 28 : 48;
+
+    const timer = window.setTimeout(() => {
+      if (!isDeletingExample) {
+        if (isComplete) {
+          setIsDeletingExample(true);
+          return;
+        }
+        setTypedExample(current.slice(0, typedExample.length + 1));
+        return;
+      }
+
+      if (isEmpty) {
+        setIsDeletingExample(false);
+        setExampleIndex((index) => (index + 1) % EXAMPLE_QUESTIONS.length);
+        return;
+      }
+
+      setTypedExample(current.slice(0, typedExample.length - 1));
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [exampleIndex, isDeletingExample, isLoading, problem, typedExample]);
 
   function toggleListening() {
     if (listening) {
@@ -139,18 +178,26 @@ export function ProblemForm() {
         )}
 
         {/* Textarea */}
-        <textarea
-          id="problem-input"
-          value={problem}
-          onChange={(e) => {
-            setProblem(e.target.value);
-            if (error) setError("");
-          }}
-          placeholder="Tell Lawly what happened. You can write it like you would explain it to a friend."
-          disabled={isLoading}
-          rows={4}
-          className="w-full bg-transparent px-4 py-4 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed"
-        />
+        <div className="relative">
+          {!problem && !isLoading && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 px-4 py-4 text-left text-sm leading-relaxed text-slate-400">
+              <span>{typedExample}</span>
+              <span className="ml-0.5 inline-block h-4 w-px translate-y-0.5 animate-pulse bg-slate-400" />
+            </div>
+          )}
+          <textarea
+            id="problem-input"
+            value={problem}
+            onChange={(e) => {
+              setProblem(e.target.value);
+              if (error) setError("");
+            }}
+            aria-label="Describe your legal situation"
+            disabled={isLoading}
+            rows={4}
+            className="relative w-full resize-none bg-transparent px-4 py-4 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 focus:outline-none"
+          />
+        </div>
 
         {/* Divider */}
         <div className="mx-4 h-px bg-slate-100" />
