@@ -1,0 +1,1 @@
+export { PromptBox } from "./chatgpt-prompt-input";
