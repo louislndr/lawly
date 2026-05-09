@@ -13,6 +13,23 @@ function todayFormatted(): string {
   });
 }
 
+function parseJsonObject(raw: string) {
+  const cleaned = raw.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
+  const jsonStart = cleaned.indexOf("{");
+  const jsonEnd = cleaned.lastIndexOf("}");
+  const jsonText =
+    jsonStart >= 0 && jsonEnd > jsonStart
+      ? cleaned.slice(jsonStart, jsonEnd + 1)
+      : cleaned;
+
+  try {
+    return JSON.parse(jsonText);
+  } catch {
+    const withoutTrailingCommas = jsonText.replace(/,\s*([}\]])/g, "$1");
+    return JSON.parse(withoutTrailingCommas);
+  }
+}
+
 function buildExtractionPrompt(
   problem: string,
   summary: string,
@@ -131,7 +148,7 @@ export async function POST(req: NextRequest) {
 
     let extracted: Partial<DocumentSlots> = {};
     try {
-      extracted = JSON.parse(response.text ?? "{}");
+      extracted = parseJsonObject(response.text ?? "{}");
     } catch {
       // fallback: all fields empty, renderer substitutes placeholders
     }

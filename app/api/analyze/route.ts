@@ -6,6 +6,23 @@ import { getFallbackGuidance } from "@/lib/fallback-guidance";
 import { buildSupportedScenarioPrompt, buildUnsupportedScenarioPrompt } from "@/lib/prompts";
 import type { SupportedScenarioId } from "@/lib/legal-content";
 
+function parseJsonObject(raw: string) {
+  const cleaned = raw.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
+  const jsonStart = cleaned.indexOf("{");
+  const jsonEnd = cleaned.lastIndexOf("}");
+  const jsonText =
+    jsonStart >= 0 && jsonEnd > jsonStart
+      ? cleaned.slice(jsonStart, jsonEnd + 1)
+      : cleaned;
+
+  try {
+    return JSON.parse(jsonText);
+  } catch {
+    const withoutTrailingCommas = jsonText.replace(/,\s*([}\]])/g, "$1");
+    return JSON.parse(withoutTrailingCommas);
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -49,9 +66,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const raw = response.text ?? "";
-    const cleaned = raw.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
-    const data = JSON.parse(cleaned);
+    const data = parseJsonObject(response.text ?? "");
 
     if (classification.supported) {
       const scenario = housingScenarios[classification.scenarioId as SupportedScenarioId];

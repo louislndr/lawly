@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ShieldCheck } from "lucide-react";
 
 const SOURCES = [
   {
@@ -34,77 +34,74 @@ const SOURCES = [
 
 export function TrustedSources() {
   return (
-    <section className="border-t border-slate-100 bg-white px-4 py-16 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-3xl">
-        {/* Heading */}
-        <div className="mb-3 flex items-center gap-2">
-          <span className="h-0.5 w-5 rounded-full bg-[#f6b21a]" />
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+    <section className="border-t border-slate-200/70 bg-[#f8fafc] px-4 py-16 sm:px-6 sm:py-20">
+      <div className="mx-auto max-w-5xl">
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Verified sources
           </p>
+          <h2 className="text-2xl font-semibold tracking-tight text-[#0f1f4a] sm:text-3xl">
+            Built on trusted Quebec sources
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-500 sm:text-base">
+            Lawly&apos;s verified housing library is based on official Quebec
+            legal and procedural sources.
+          </p>
         </div>
-        <h2 className="mb-3 text-xl font-semibold text-[#0f1f4a] sm:text-2xl">
-          Built on trusted Quebec sources
-        </h2>
-        <p className="mb-8 max-w-xl text-sm leading-relaxed text-slate-500">
-          Lawly's verified housing library is based on official Quebec legal
-          and procedural sources.
-        </p>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {SOURCES.map((src) => (
             <div
               key={src.name}
-              className="flex flex-col justify-between rounded-xl border border-slate-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+              className="group flex min-h-44 flex-col justify-between rounded-xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300"
             >
-              {/* Top: logo + name */}
-              <div>
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
+              <div className="flex gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                  <div className="flex h-7 w-7 items-center justify-center">
                     <Image
                       src={src.logo}
                       alt={src.name}
                       width={64}
                       height={64}
-                      className="h-6 w-6 object-contain"
+                      className="max-h-6 max-w-6 object-contain"
                     />
                   </div>
-                  <p className="text-sm font-semibold leading-tight text-[#162f70]">
-                    {src.name}
-                  </p>
                 </div>
 
-                {/* Label chip */}
-                <span className="mb-2.5 inline-block rounded-full bg-[#f6b21a]/12 px-2.5 py-0.5 text-xs font-medium text-[#a07200]">
-                  {src.label}
-                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <h3 className="text-sm font-semibold leading-5 text-slate-900">
+                      {src.name}
+                    </h3>
+                    <span className="w-fit shrink-0 rounded-full border border-[#f6b21a]/20 bg-[#f6b21a]/10 px-2 py-0.5 text-[11px] font-medium leading-5 text-[#8a6500]">
+                      {src.label}
+                    </span>
+                  </div>
 
-                {/* Description */}
-                <p className="text-xs leading-relaxed text-slate-500">
-                  {src.description}
-                </p>
+                  <p className="mt-3 text-sm leading-6 text-slate-500">
+                    {src.description}
+                  </p>
+
+                  <a
+                    href={src.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#162f70] underline-offset-4 transition-colors hover:text-[#0f245c] hover:underline"
+                  >
+                    Visit source
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
               </div>
-
-              {/* Bottom: visit link */}
-              <a
-                href={src.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 flex items-center gap-1 text-xs font-medium text-[#162f70]/60 transition-colors hover:text-[#162f70]"
-              >
-                Visit source
-                <ExternalLink className="h-3 w-3" />
-              </a>
             </div>
           ))}
         </div>
 
-        {/* Verified library + no-hallucination */}
-        <div className="mt-5 space-y-3">
-          <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-            <p className="text-xs leading-relaxed text-slate-500">
-              <span className="font-semibold text-slate-700">
+        <div className="mt-5 rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#162f70]/55" />
+            <p className="text-sm leading-6 text-slate-500">
+              <span className="font-medium text-slate-700">
                 Verified housing library loaded:
               </span>{" "}
               C.C.Q. arts. 1904, 1854, 1910, 1942, 1945, 1957, and 1960.

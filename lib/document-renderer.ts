@@ -63,7 +63,7 @@ function fmtDate(d: Date): string {
 }
 
 function s(slots: DocumentSlots, key: keyof DocumentSlots): string {
-  return slots[key] || PLACEHOLDER[key];
+  return PLACEHOLDER[key];
 }
 
 function senderBlock(slots: DocumentSlots): string {
@@ -84,18 +84,18 @@ function renderDepositFormalNotice(slots: DocumentSlots): RenderedDocument {
   const backgroundFacts = [
     `I was a tenant of the residential dwelling located at ${s(slots, "unitAddress")}.`,
     slots.datePaid
-      ? `On or about ${slots.datePaid}, you required and collected from me a security deposit in the amount of ${s(slots, "depositAmount")}.`
+      ? `On or about ${s(slots, "datePaid")}, you required and collected from me a security deposit in the amount of ${s(slots, "depositAmount")}.`
       : `At the commencement of the tenancy, you required and collected from me a security deposit in the amount of ${s(slots, "depositAmount")}.`,
     slots.moveOutDate
-      ? `On or about ${slots.moveOutDate}, I vacated the premises and returned possession of the unit to you.`
+      ? `On or about ${s(slots, "moveOutDate")}, I vacated the premises and returned possession of the unit to you.`
       : `I have since vacated the premises and returned possession of the unit to you.`,
     slots.landlordReason
-      ? `You have refused to return the deposit, citing: ${slots.landlordReason}.`
+      ? `You have refused to return the deposit, citing: ${s(slots, "landlordReason")}.`
       : `Despite my departure, you have failed to return this deposit.`,
   ].join(" ");
 
   const evidenceParagraph = slots.proofAvailable
-    ? `In support of this demand, I have retained the following evidence: ${slots.proofAvailable}. I am prepared to present this evidence before any competent tribunal.`
+    ? `In support of this demand, I have retained the following evidence: ${s(slots, "proofAvailable")}. I am prepared to present this evidence before any competent tribunal.`
     : `I have retained all relevant supporting documents, including the signed lease agreement, proof of deposit payment, and records of the condition of the unit at move-out.`;
 
   const sections: DocumentSection[] = [
@@ -161,11 +161,11 @@ function renderRepairsFormalNotice(slots: DocumentSlots): RenderedDocument {
   const deadline = slots.deadlineDate || fmtDate(addBusinessDays(now, 10));
 
   const notifiedLine = slots.notifiedDate
-    ? `I notified you in writing on or about ${slots.notifiedDate}, but the issue has not been resolved.`
+    ? `I notified you in writing on or about ${s(slots, "notifiedDate")}, but the issue has not been resolved.`
     : `I have previously notified you of this issue, but it has not been resolved.`;
 
   const evidenceLine = slots.proofAvailable
-    ? `I have retained the following evidence: ${slots.proofAvailable}.`
+    ? `I have retained the following evidence: ${s(slots, "proofAvailable")}.`
     : `I have documented the issue with dates, photos, and records.`;
 
   const sections: DocumentSection[] = [
@@ -353,7 +353,7 @@ function renderDepositFilingPrep(slots: DocumentSlots): RenderedDocument {
     { id: "summary", type: "paragraph", label: "CASE SUMMARY", content: `Claim for return of a security deposit of ${s(slots, "depositAmount")} paid at ${s(slots, "unitAddress")}. Under Article 1904 C.C.Q., security deposits in residential leases are prohibited and must be returned in full.` },
     { id: "tenant-info", type: "info-rows", label: "APPLICANT / TENANT", content: [["Full name", s(slots, "tenantName"), "tenantName"], ["Mailing address", s(slots, "tenantAddress"), "tenantAddress"], ["City / Postal code", s(slots, "tenantCity"), "tenantCity"], ["Phone", s(slots, "tenantPhone"), "tenantPhone"], ["Email", s(slots, "tenantEmail"), "tenantEmail"]] },
     { id: "landlord-info", type: "info-rows", label: "LANDLORD / DEFENDANT", content: [["Full name or company", s(slots, "landlordName"), "landlordName"], ["Mailing address", s(slots, "landlordAddress"), "landlordAddress"]] },
-    { id: "dwelling-info", type: "info-rows", label: "DWELLING", content: [["Unit address", s(slots, "unitAddress"), "unitAddress"], ["Deposit paid on", s(slots, "datePaid"), "datePaid"], ["Tenant vacated on", s(slots, "moveOutDate"), "moveOutDate"], ["Landlord's reason for refusal", slots.landlordReason || "None provided", "landlordReason"]] },
+    { id: "dwelling-info", type: "info-rows", label: "DWELLING", content: [["Unit address", s(slots, "unitAddress"), "unitAddress"], ["Deposit paid on", s(slots, "datePaid"), "datePaid"], ["Tenant vacated on", s(slots, "moveOutDate"), "moveOutDate"], ["Landlord's reason for refusal", slots.landlordReason ? s(slots, "landlordReason") : "None provided", "landlordReason"]] },
     { id: "amount", type: "info-rows", label: "AMOUNT CLAIMED", content: [["Security deposit (unlawfully collected)", s(slots, "depositAmount"), "depositAmount"], ["Interest (Art. 1617 C.C.Q.)", "To be calculated at filing"], ["Estimated total minimum", `${s(slots, "depositAmount")} + interest`]] },
     { id: "facts", type: "paragraph", label: "FACTS OF THE CLAIM", content: factsText },
     { id: "legal-basis", type: "paragraph", label: "LEGAL BASIS", content: `Article 1904 C.C.Q. prohibits a lessor from requiring a security deposit in a residential lease. Any such deposit must be returned in full. Interest applies under Art. 1617 C.C.Q. The general prescription period is 3 years (Art. 2925 C.C.Q.).` },

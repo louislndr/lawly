@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Shield } from "lucide-react";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import { ProblemForm } from "@/components/problem-form";
+import ProblemForm from "@/components/problem-form";
 import { TrustedSources } from "@/components/TrustedSources";
 
 export default function HomePage() {
