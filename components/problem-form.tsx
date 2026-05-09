@@ -11,11 +11,47 @@ const EXAMPLE_QUESTIONS = [
   "My employer has not paid my last paycheck.",
 ];
 
-type AnySR = new () => any;
+function createCaseId() {
+  return `LW-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+}
 
-function getSR(): AnySR | undefined {
+type SpeechRecognitionResultLike = {
+  0: {
+    transcript: string;
+  };
+};
+
+type SpeechRecognitionEventLike = {
+  results: Iterable<SpeechRecognitionResultLike>;
+};
+
+type SpeechRecognitionErrorEventLike = {
+  error: string;
+};
+
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+type WindowWithSpeechRecognition = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
+function getSR(): SpeechRecognitionConstructor | undefined {
   if (typeof window === "undefined") return undefined;
-  return (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+  const speechWindow = window as WindowWithSpeechRecognition;
+  return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
 }
 
 export function ProblemForm() {
@@ -28,7 +64,7 @@ export function ProblemForm() {
   const [typedExample, setTypedExample] = useState("");
   const [exampleIndex, setExampleIndex] = useState(0);
   const [isDeletingExample, setIsDeletingExample] = useState(false);
-  const srRef = useRef<any>(null);
+  const srRef = useRef<SpeechRecognitionLike | null>(null);
   const problemRef = useRef(problem);
 
   useEffect(() => {
@@ -91,9 +127,9 @@ export function ProblemForm() {
     sr.interimResults = false;
     sr.lang = "en-CA";
 
-    sr.onresult = (e: any) => {
+    sr.onresult = (e) => {
       const transcript = Array.from(e.results)
-        .map((r: any) => r[0].transcript)
+        .map((r) => r[0].transcript)
         .join(" ")
         .trim();
       if (transcript) {
@@ -103,7 +139,7 @@ export function ProblemForm() {
       }
     };
 
-    sr.onerror = (e: any) => {
+    sr.onerror = (e) => {
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
         setMicError("Microphone access was blocked.");
       }
@@ -148,6 +184,7 @@ export function ProblemForm() {
         "lawly_case",
         JSON.stringify({ problem: trimmed, analysis })
       );
+      sessionStorage.setItem("lawly_case_id", createCaseId());
       router.push("/case");
     } catch (err) {
       setError(
@@ -251,3 +288,5 @@ export function ProblemForm() {
     </form>
   );
 }
+
+export default ProblemForm;

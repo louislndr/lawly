@@ -60,3 +60,22 @@ export interface CaseData {
   problem: string;
   analysis: AnalysisResult;
 }
+
+export interface SavedCase {
+  id: string;
+  problem: string;
+  category: string;
+  createdAt: string;
+  lastModified: string;
+  analysis: AnalysisResult;
+  status: "active" | "resolved" | "archived";
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  cases: SavedCase[];
+  avatar?: string;
+}

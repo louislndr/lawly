@@ -4,16 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
+import { getPersistedCaseById } from "@/lib/user-data";
 import {
   ArrowLeft,
-  BookOpen,
+  ArrowRight,
   Loader2,
-  Info,
   AlertCircle,
   FileText,
   HelpCircle,
   ExternalLink,
-  Shield,
   Clock,
 } from "lucide-react";
 import type {
@@ -21,8 +20,10 @@ import type {
   SupportedAnalysisResult,
   UnsupportedAnalysisResult,
 } from "@/types/lawly";
-import type { DocumentType, DocumentSlots } from "@/lib/document-templates";
-import { DocumentPreview } from "@/components/DocumentPreview";
+import { CaseChecklist } from "@/components/CaseChecklist";
+import { CaseHeader } from "@/components/CaseHeader";
+import { LegalAnalysisPanel } from "@/components/LegalAnalysisPanel";
+import { LegalSourceCard } from "@/components/LegalSourceCard";
 import { LegalTimeline } from "@/components/LegalTimeline";
 
 function urgencyLabel(urgency: "low" | "medium" | "high"): string {
@@ -41,47 +42,40 @@ export default function CasePage() {
   const router = useRouter();
   const [caseData, setCaseData] = useState<CaseData | null>(null);
   const [pageStatus, setPageStatus] = useState<"loading" | "ready" | "no_data">("loading");
-  const [slots, setSlots] = useState<DocumentSlots | null>(null);
-  const [slotsStatus, setSlotsStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [activeDocument, setActiveDocument] = useState<DocumentType | null>(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("lawly_case");
     if (stored) {
       try {
+        // Session storage is the handoff from the homepage form to this client route.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCaseData(JSON.parse(stored));
         setPageStatus("ready");
+        return;
       } catch {
-        setPageStatus("no_data");
+        // Fall through to try persisted case by ID.
       }
-    } else {
-      setPageStatus("no_data");
     }
-  }, []);
 
-  async function generateDocument(type: DocumentType) {
-    if (!caseData) return;
-    setActiveDocument(type);
-    if (slots) return;
-    setSlotsStatus("loading");
-    try {
-      const res = await fetch("/api/letter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          problem: caseData.problem,
-          analysis: caseData.analysis,
-        }),
-      });
-      if (!res.ok) throw new Error("failed");
-      const data = await res.json();
-      setSlots(data.slots);
-      setSlotsStatus("ready");
-    } catch {
-      setSlotsStatus("error");
-      setActiveDocument(null);
+    const urlParams = new URLSearchParams(window.location.search);
+    const caseId = urlParams.get("caseId");
+    if (caseId) {
+      const persisted = getPersistedCaseById(caseId);
+      if (persisted) {
+        const casePayload = { problem: persisted.problem, analysis: persisted.analysis };
+        sessionStorage.setItem(
+          "lawly_case",
+          JSON.stringify({ ...casePayload, caseId: persisted.id })
+        );
+        sessionStorage.setItem("lawly_case_id", persisted.id);
+        setCaseData(casePayload);
+        setPageStatus("ready");
+        return;
+      }
     }
-  }
+
+    setPageStatus("no_data");
+  }, []);
 
   if (pageStatus === "loading") {
     return (
@@ -115,58 +109,59 @@ export default function CasePage() {
   return (
     <>
       <Nav />
-      <main className="liquid-background min-h-screen overflow-hidden">
-        <section className="relative min-h-screen px-4 pb-4 pt-20 sm:px-6 sm:pb-6 sm:pt-20">
-          <div className="absolute inset-x-0 top-0 h-px bg-white" />
-
-          <div className="relative mx-auto max-w-4xl">
+      <main className="min-h-screen bg-[#f6f8fc]">
+        <section className="px-4 pb-12 pt-24 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1200px]">
             <button
               onClick={() => router.push("/")}
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-8 transition-colors print:hidden"
+              className="mb-5 flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-[#172b5f] print:hidden"
             >
               <ArrowLeft className="w-4 h-4" />
               New search
             </button>
 
-            <div className="bg-gray-50 border border-gray-100 rounded-xl px-5 py-4 mb-6 print:hidden">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-                Your situation
-              </p>
-              <p className="text-gray-700 text-sm leading-relaxed">{problem}</p>
-            </div>
+            <CaseHeader />
 
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-5 shadow-sm print:hidden">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Info className="w-4 h-4 text-blue-600" />
-                </div>
-                <h2 className="font-semibold text-gray-900">What this means</h2>
+            <div className="mt-6 space-y-5">
+              <section className="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] print:hidden">
+                <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  Your situation
+                </p>
+                <p className="text-sm leading-6 text-slate-700">{problem}</p>
+              </section>
+
+              {analysis.supported ? (
+                <>
+                  <SupportedView analysis={analysis} />
+                  <section className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white px-5 py-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] print:hidden sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-base font-semibold text-[#172b5f]">
+                        Ready to prepare your documents?
+                      </h2>
+                      <p className="mt-1 text-sm leading-6 text-slate-500">
+                        Open the document workspace for the formal notice and filing prep packet.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/case/documents")}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#172b5f] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#203875]"
+                    >
+                      Your documents
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </section>
+                </>
+              ) : (
+                <UnsupportedView analysis={analysis} />
+              )}
+
+              <div className="rounded-xl border border-slate-200 bg-white px-5 py-4 print:hidden">
+                <p className="text-center text-xs leading-5 text-slate-500">
+                  {analysis.disclaimer ||
+                    "Lawly provides legal information, not legal advice. This is for general informational purposes only. For advice specific to your situation, consult a licensed lawyer or notary in Quebec."}
+                </p>
               </div>
-              <p className="text-gray-700 leading-relaxed">{analysis.plainLanguageSummary}</p>
-            </div>
-
-            {analysis.supported ? (
-              <SupportedView
-                analysis={analysis}
-                slotsStatus={slotsStatus}
-                slots={slots}
-                activeDocument={activeDocument}
-                onGenerateDocument={generateDocument}
-                onSetActiveDocument={setActiveDocument}
-                onRetry={() => setSlotsStatus("idle")}
-                onUpdateSlot={(key, value) =>
-                  setSlots((prev) => (prev ? { ...prev, [key]: value } : null))
-                }
-              />
-            ) : (
-              <UnsupportedView analysis={analysis} />
-            )}
-
-            <div className="border border-gray-100 rounded-xl px-5 py-4 bg-gray-50 mb-6 print:hidden">
-              <p className="text-xs text-gray-500 leading-relaxed text-center">
-                {analysis.disclaimer ||
-                  "Lawly provides legal information, not legal advice. This is for general informational purposes only. For advice specific to your situation, consult a licensed lawyer or notary in Quebec."}
-              </p>
             </div>
           </div>
         </section>
@@ -178,137 +173,24 @@ export default function CasePage() {
 
 function SupportedView({
   analysis,
-  slotsStatus,
-  slots,
-  activeDocument,
-  onGenerateDocument,
-  onSetActiveDocument,
-  onRetry,
-  onUpdateSlot,
 }: {
   analysis: SupportedAnalysisResult;
-  slotsStatus: "idle" | "loading" | "ready" | "error";
-  slots: DocumentSlots | null;
-  activeDocument: DocumentType | null;
-  onGenerateDocument: (type: DocumentType) => void;
-  onSetActiveDocument: (type: DocumentType) => void;
-  onRetry: () => void;
-  onUpdateSlot: (key: keyof DocumentSlots, value: string) => void;
 }) {
   const primaryCitation = analysis.citations?.[0];
 
   return (
     <>
-      {primaryCitation && (
-        <div className="bg-blue-600 rounded-2xl p-6 mb-5 text-white print:hidden">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <BookOpen className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <p className="font-semibold">{primaryCitation.articleOrPage}</p>
-              <p className="text-xs text-blue-200">{primaryCitation.sourceName}</p>
-            </div>
-          </div>
-          {primaryCitation.exactExcerpt && (
-            <p className="text-blue-100 text-sm italic leading-relaxed mb-4 pl-10">
-              &ldquo;{primaryCitation.exactExcerpt}&rdquo;
-            </p>
-          )}
-          <div className="bg-white/10 rounded-xl px-4 py-3">
-            <p className="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-1">
-              In plain language
-            </p>
-            <p className="text-white text-sm leading-relaxed">{primaryCitation.plainRule}</p>
-          </div>
-        </div>
-      )}
-
-      {analysis.rightsExplanation && (
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-5 shadow-sm print:hidden">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-4 h-4 text-green-600" />
-            </div>
-            <h2 className="font-semibold text-gray-900">Your rights</h2>
-          </div>
-          <p className="text-gray-700 leading-relaxed">{analysis.rightsExplanation}</p>
-        </div>
-      )}
-
-      <LegalTimeline
-        steps={analysis.nextSteps}
-        availableDocuments={
-          analysis.availableDocuments?.length > 0
-            ? analysis.availableDocuments
-            : ["formal_notice", "filing_prep_packet"]
-        }
-        onGenerateDocument={onGenerateDocument}
-        slotsStatus={slotsStatus}
+      <LegalAnalysisPanel
+        summary={analysis.plainLanguageSummary}
+        rights={analysis.rightsExplanation}
+        importantFacts={analysis.keyFacts}
       />
 
-      {analysis.keyFacts?.length > 0 && (
-        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 mb-5 print:hidden">
-          <p className="text-sm font-semibold text-amber-800 mb-3">Key facts to know</p>
-          <ul className="flex flex-col gap-2">
-            {analysis.keyFacts.map((fact, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-amber-900">
-                <span className="text-amber-400 mt-1 flex-shrink-0">•</span>
-                {fact}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {primaryCitation && <LegalSourceCard citation={primaryCitation} />}
 
-      <div className="print:hidden">{/* loading / error / ready states */}
+      <LegalTimeline steps={analysis.nextSteps} />
 
-        {slotsStatus === "loading" && (
-          <div className="bg-white border border-gray-100 rounded-2xl p-10 shadow-sm flex flex-col items-center gap-3 text-center mb-6">
-            <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-            <p className="text-sm text-gray-500">Generating your document…</p>
-          </div>
-        )}
-
-        {slotsStatus === "error" && (
-          <div className="bg-red-50 border border-red-100 rounded-2xl p-6 mb-6 text-center">
-            <p className="text-sm text-red-600 mb-2">
-              Document generation failed. Please try again.
-            </p>
-            <button onClick={onRetry} className="text-sm text-red-600 underline">
-              Try again
-            </button>
-          </div>
-        )}
-
-        {slotsStatus === "ready" && slots && activeDocument && (
-          <div>
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => onSetActiveDocument("formal_notice")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeDocument === "formal_notice"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                Formal Notice
-              </button>
-              <button
-                onClick={() => onSetActiveDocument("filing_prep_packet")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeDocument === "filing_prep_packet"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                Filing Prep Packet
-              </button>
-            </div>
-            <DocumentPreview slots={slots} type={activeDocument} onSlotChange={onUpdateSlot} />
-          </div>
-        )}
-      </div>
+      <CaseChecklist />
     </>
   );
 }
