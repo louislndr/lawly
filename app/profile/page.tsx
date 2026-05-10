@@ -167,7 +167,7 @@ export default function ProfilePage() {
                     {caseItem.analysis.supported && caseItem.analysis.timeline.length > 0 && (
                       <div className="mt-4 inline-block">
                         <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${urgencyColor(caseItem.analysis.timeline[0].urgency)}`}
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${urgencyColor(caseItem.analysis.timeline[0].urgency ?? "low")}`}
                         >
                           {caseItem.analysis.timeline[0].urgency === "high" && (
                             <AlertCircle className="h-3.5 w-3.5" />
