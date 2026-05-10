@@ -13,27 +13,28 @@ export interface CitationFrontend {
   plainRule: string;
 }
 
-export interface NextStepSupported {
-  title: string;
-  description: string;
-  timingLabel: string;
-  urgency: "low" | "medium" | "high";
-}
+export type TimelineStepType =
+  | "source_based"
+  | "practical_next_step"
+  | "needs_verification";
 
-export interface NextStepUnsupported {
+export interface TimelineStepFrontend {
   title: string;
   description: string;
-  urgency: "low" | "medium" | "high";
+  timingLabel?: string;
+  urgency?: "low" | "medium" | "high";
+  stepType: TimelineStepType;
 }
 
 export interface SupportedAnalysisResult {
   supported: true;
   scenarioId: string;
   category: string;
-  plainLanguageSummary: string;
+  title: string;
+  explanation: string;
   rightsExplanation: string;
   citations: CitationFrontend[];
-  nextSteps: NextStepSupported[];
+  timeline: TimelineStepFrontend[];
   availableDocuments: string[];
   missingInformation: string[];
   keyFacts: string[];
@@ -44,13 +45,12 @@ export interface SupportedAnalysisResult {
 export interface UnsupportedAnalysisResult {
   supported: false;
   category: string;
+  title: string;
   plainLanguageSummary: string;
-  safeOrientation: string;
-  nextSteps: NextStepUnsupported[];
+  whatLawlyCanDo: string[];
   documentsToGather: string[];
   questionsToAsk: string[];
-  trustedResources: TrustedResourceFrontend[];
-  documentOptions: string[];
+  trustedSources: TrustedResourceFrontend[];
   disclaimer: string;
 }
 

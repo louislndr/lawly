@@ -1,23 +1,29 @@
 "use client";
 
-export interface LegalTimelineStep {
-  title: string;
-  description: string;
-  timingLabel?: string;
-  urgency?: "low" | "medium" | "high";
-}
+import type { TimelineStepFrontend } from "@/types/lawly";
 
 interface LegalTimelineProps {
-  steps: LegalTimelineStep[];
+  steps: TimelineStepFrontend[];
   availableDocuments?: string[];
   onGenerateDocument?: (type: string) => void;
-  slotsStatus?: "idle" | "loading" | "ready" | "error";
 }
 
-function urgencyText(urgency: "low" | "medium" | "high"): string {
-  if (urgency === "high") return "Important";
-  if (urgency === "medium") return "Important";
-  return "When ready";
+function stepTypeBadge(stepType: TimelineStepFrontend["stepType"]) {
+  if (stepType === "source_based") {
+    return (
+      <span className="w-fit rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+        Verified source
+      </span>
+    );
+  }
+  if (stepType === "needs_verification") {
+    return (
+      <span className="w-fit rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+        Verify first
+      </span>
+    );
+  }
+  return null;
 }
 
 export function LegalTimeline({ steps }: LegalTimelineProps) {
@@ -32,10 +38,14 @@ export function LegalTimeline({ steps }: LegalTimelineProps) {
 
       <ol className="relative mt-6 space-y-0">
         {steps.length > 1 && (
-          <div className="absolute left-4 top-8 bottom-8 w-px bg-slate-200" aria-hidden="true" />
+          <div
+            className="absolute left-4 top-8 bottom-8 w-px bg-slate-200"
+            aria-hidden="true"
+          />
         )}
         {steps.map((step, index) => {
           const urgency = step.urgency ?? "medium";
+          const type = step.stepType ?? "practical_next_step";
           return (
             <li key={index} className="relative flex gap-4 pb-6 last:pb-0">
               <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-xs font-semibold text-[#172b5f]">
@@ -48,9 +58,12 @@ export function LegalTimeline({ steps }: LegalTimelineProps) {
                     <span className="w-fit rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-600">
                       {step.timingLabel || "Next"}
                     </span>
-                    <span className="w-fit rounded-full px-2.5 py-0.5 text-xs font-medium text-slate-400">
-                      {urgencyText(urgency)}
-                    </span>
+                    {urgency === "high" && (
+                      <span className="w-fit rounded-full px-2.5 py-0.5 text-xs font-medium text-slate-400">
+                        Important
+                      </span>
+                    )}
+                    {stepTypeBadge(type)}
                   </div>
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{step.description}</p>

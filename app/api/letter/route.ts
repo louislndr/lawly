@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGeminiClient } from "@/lib/gemini";
-import { housingScenarios } from "@/lib/legal-content";
+import { housingScenarios } from "@/lib/legal-library";
 import type { DocumentSlots } from "@/lib/document-templates";
-import type { SupportedScenarioId } from "@/lib/legal-content";
+import type { SupportedScenarioId } from "@/lib/legal-library";
 
 function todayFormatted(): string {
   return new Date().toLocaleDateString("en-CA", {
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
 
     const prompt = buildExtractionPrompt(
       problem,
-      analysis.plainLanguageSummary,
+      analysis.explanation ?? analysis.plainLanguageSummary ?? "",
       scenario,
       scenarioId,
       today

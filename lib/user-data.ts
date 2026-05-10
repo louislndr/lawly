@@ -64,7 +64,7 @@ export function saveCaseToStorage(caseItem: SavedCase): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
 }
 
-// Fake user data with sample cases
+// Sample cases for demo — uses the updated response shapes
 export const FAKE_USER: UserProfile = {
   id: "user_louis_001",
   name: "Louis Landreau",
@@ -75,258 +75,194 @@ export const FAKE_USER: UserProfile = {
     {
       id: "case_001",
       problem: "My landlord refused to return my security deposit after I moved out",
-      category: "Housing & Tenant Rights",
+      category: "housing",
       createdAt: "2026-05-09",
       lastModified: "2026-05-09",
       status: "active",
       analysis: {
         supported: true,
         scenarioId: "housing_deposit",
-        category: "Housing & Tenant Rights",
-        plainLanguageSummary:
-          "In Quebec, landlords must return security deposits within 30 days or provide written reasons for deductions. If your landlord is withholding your full deposit without justification, you have legal recourse.",
+        category: "housing",
+        title: "Security deposit or money demanded by landlord",
+        explanation:
+          "In Quebec, a landlord cannot require any amount of money other than rent — this includes security deposits, damage deposits, and key deposits. If your landlord kept a deposit, the verified rule (CCQ art. 1904) is on your side.",
         rightsExplanation:
-          "You have the right to a full return of your security deposit if your rental unit is in good condition (normal wear and tear excepted). Landlords can only deduct for damages beyond normal use.",
+          "You have the right to the return of any deposit paid, since collecting it was illegal under Quebec residential tenancy law.",
         citations: [
           {
-            label: "Civil Code of Quebec",
-            sourceName: "Quebec Civil Code",
-            articleOrPage: "Article 1942-1948",
-            sourceUrl: "https://laws-lois.justice.gc.ca",
-            exactExcerpt: "The lessor shall return the sum deposited...",
-            plainRule: "Landlord must return deposit within 30 days",
+            label: "Civil Code of Québec — Art. 1904",
+            sourceName: "Civil Code of Québec",
+            articleOrPage: "Article 1904 C.C.Q.",
+            sourceUrl:
+              "https://www.legisquebec.gouv.qc.ca/en/version/cs/ccq-1991?code=se%3A1904",
+            exactExcerpt:
+              "Nor may he exact any amount of money other than the rent, in the form of a deposit or otherwise",
+            plainRule:
+              "A Quebec residential landlord cannot require a deposit or any other amount of money beyond rent.",
           },
         ],
-        nextSteps: [
+        timeline: [
           {
-            title: "Send formal demand letter",
-            description: "Send a certified letter requesting the return of your deposit with 10 days to respond",
-            timingLabel: "Within 2 weeks",
+            title: "Gather proof",
+            description:
+              "Keep the lease, proof of payment, messages, photos, and any written reason the landlord gave.",
+            timingLabel: "Today",
             urgency: "high",
+            stepType: "practical_next_step",
           },
           {
-            title: "File complaint with Tribunal",
-            description: "If not resolved, file a complaint with the rental tribunal",
-            timingLabel: "Within 1 month of demand",
+            title: "Send formal notice",
+            description:
+              "Send a formal written demand asking for the return of the deposit and keep proof of delivery.",
+            timingLabel: "As soon as possible",
             urgency: "high",
+            stepType: "practical_next_step",
+          },
+          {
+            title: "Verify the correct filing path",
+            description:
+              "If there is no response, contact a tenant association or legal clinic and confirm the correct forum and process before filing anything official.",
+            timingLabel: "If no response by deadline",
+            urgency: "medium",
+            stepType: "needs_verification",
           },
         ],
-        availableDocuments: [
-          "Lease agreement",
-          "Photos of property condition",
-          "Proof of payment (deposit check/receipt)",
-          "Correspondence with landlord",
+        availableDocuments: ["formal_notice", "filing_prep_packet"],
+        missingInformation: [
+          "Exact amount of deposit paid",
+          "Date deposit was paid",
+          "Landlord's written reason for keeping it",
         ],
-        missingInformation: ["Documentation of property condition upon move-out", "Landlord's written response"],
         keyFacts: [
-          "Deposit was $1,200",
-          "Moved out on May 5, 2026",
-          "No written explanation provided",
+          "Gather proof of the payment, lease, messages, and move-out condition.",
+          "Send a formal notice demanding return of the deposit.",
+          "If there is no response, verify the correct filing path before filing.",
         ],
         trustedResources: [
           {
-            name: "Regie du logement du Quebec",
-            url: "https://www.reviseur.qc.ca",
-            description: "Official Quebec rental tribunal",
+            name: "Tribunal administratif du logement",
+            url: "https://www.tal.gouv.qc.ca/en/",
+            description: "Quebec's housing tribunal and official housing forms.",
           },
           {
-            name: "Community Legal Clinic",
-            url: "https://www.legal-aid.qc.ca",
-            description: "Free legal aid services",
+            name: "Éducaloi",
+            url: "https://educaloi.qc.ca/en/",
+            description: "Plain-language legal information for people in Quebec.",
           },
         ],
-        disclaimer: "This is legal information, not legal advice. Consult with a lawyer for your specific situation.",
+        disclaimer:
+          "Lawly is not a lawyer. This is legal information, not legal advice. Verify deadlines, forms, and the correct filing path before taking action.",
       },
     },
     {
       id: "case_002",
-      problem: "I was wrongfully terminated from my job without notice or severance",
-      category: "Employment Rights",
-      createdAt: "2026-05-09",
-      lastModified: "2026-05-09",
-      status: "active",
-      analysis: {
-        supported: true,
-        scenarioId: "employment_termination",
-        category: "Employment Rights",
-        plainLanguageSummary:
-          "In Quebec, employers must provide proper notice or pay severance when terminating employment. Wrongful termination claims require showing the dismissal was without cause and without proper procedures.",
-        rightsExplanation:
-          "You have the right to either notice period (usually 2 weeks) or severance pay equal to at least 2 weeks of wages. If terminated without cause and without notice, you may claim damages.",
-        citations: [
-          {
-            label: "Quebec Labor Standards",
-            sourceName: "An Act respecting Labour Standards",
-            articleOrPage: "Section 82",
-            sourceUrl: "https://legisquebec.gouv.qc.ca",
-            exactExcerpt: "An employer shall give written notice...",
-            plainRule: "Two weeks notice required for termination",
-          },
-        ],
-        nextSteps: [
-          {
-            title: "Gather documentation",
-            description: "Collect all termination documents, employment contract, pay stubs, and communications",
-            timingLabel: "Immediately",
-            urgency: "high",
-          },
-          {
-            title: "Consult employment lawyer",
-            description: "Get a free consultation to assess your case",
-            timingLabel: "Within 2 weeks",
-            urgency: "high",
-          },
-        ],
-        availableDocuments: [
-          "Employment contract",
-          "Termination letter",
-          "Pay stubs",
-          "Email communications",
-        ],
-        missingInformation: [
-          "Medical reports (if health-related)",
-          "Performance evaluations",
-          "Witness statements",
-        ],
-        keyFacts: ["Employed for 3 years", "No written cause provided", "No severance offered"],
-        trustedResources: [
-          {
-            name: "Quebec Commission des normes, de l'équité...",
-            url: "https://www.cnt.gouv.qc.ca",
-            description: "Labor standards authority",
-          },
-          {
-            name: "Pro Bono Lawyers Network",
-            url: "https://www.barreau.qc.ca",
-            description: "Find legal assistance",
-          },
-        ],
-        disclaimer: "Employment law is complex. This information is not a substitute for legal advice.",
-      },
-    },
-    {
-      id: "case_003",
-      problem: "I received a discrimination complaint at my workplace",
-      category: "Discrimination & Harassment",
-      createdAt: "2026-05-09",
-      lastModified: "2026-05-09",
-      status: "resolved",
-      analysis: {
-        supported: true,
-        scenarioId: "workplace_discrimination",
-        category: "Discrimination & Harassment",
-        plainLanguageSummary:
-          "Workplace discrimination based on protected grounds (age, race, gender, disability, etc.) is illegal in Quebec. You have the right to file a complaint and seek remedies.",
-        rightsExplanation:
-          "The Quebec Human Rights Commission protects individuals from discrimination. Both employers and employees can file complaints alleging discriminatory conduct.",
-        citations: [
-          {
-            label: "Quebec Charter of Human Rights",
-            sourceName: "Charter of human rights and freedoms",
-            articleOrPage: "Articles 10-16",
-            sourceUrl: "https://legisquebec.gouv.qc.ca",
-            exactExcerpt: "Every person has a right to...",
-            plainRule: "Protection against discrimination in employment",
-          },
-        ],
-        nextSteps: [
-          {
-            title: "Document all incidents",
-            description: "Create detailed record of discriminatory behavior with dates and witnesses",
-            timingLabel: "Ongoing",
-            urgency: "high",
-          },
-          {
-            title: "Report to HR",
-            description: "File formal complaint with your employer's human resources",
-            timingLabel: "Within 2 weeks",
-            urgency: "high",
-          },
-        ],
-        availableDocuments: [
-          "Incident log",
-          "Emails and messages",
-          "Witness contact information",
-          "HR policies",
-        ],
-        missingInformation: [
-          "Formal responses from HR",
-          "Investigation report",
-          "Legal analysis of discrimination claims",
-        ],
-        keyFacts: ["Multiple incidents over 6 months", "Affects work performance", "Other employees affected"],
-        trustedResources: [
-          {
-            name: "Quebec Human Rights Commission",
-            url: "https://www.cdpdj.qc.ca",
-            description: "Official agency for human rights complaints",
-          },
-          {
-            name: "Worker Advocacy Center",
-            url: "https://www.caj.ca",
-            description: "Support for workers facing discrimination",
-          },
-        ],
-        disclaimer: "Discrimination law is specialized. Professional legal guidance is recommended.",
-      },
-    },
-    {
-      id: "case_004",
-      problem: "Neighbor's tree branches hanging over my property - causing damage",
-      category: "Property Rights",
+      problem: "I was fired from my job without any notice or reason",
+      category: "work",
       createdAt: "2026-05-09",
       lastModified: "2026-05-09",
       status: "active",
       analysis: {
         supported: false,
-        category: "Property Rights",
+        category: "work",
+        title: "This sounds like a work or employment issue",
         plainLanguageSummary:
-          "While property disputes over encroaching trees are common, Quebec property law addresses this through different mechanisms. Here's what you need to know.",
-        safeOrientation:
-          "Tree disputes often require both legal and practical solutions. Document the damage and try negotiation first.",
-        nextSteps: [
-          {
-            title: "Take photographs of damage",
-            description: "Document all damage caused by the branches and overhanging foliage",
-            urgency: "medium",
-          },
-          {
-            title: "Send formal written notice",
-            description: "Write to your neighbor requesting they trim the branches within 30 days",
-            urgency: "medium",
-          },
+          "Lawly recognized the type of issue, but does not yet have verified Quebec legal content loaded for this exact situation.",
+        whatLawlyCanDo: [
+          "Organize your facts into a clear timeline",
+          "Identify documents to gather before seeking help",
+          "Prepare questions to ask a lawyer or legal clinic",
+          "Suggest trusted Quebec sources to check",
         ],
         documentsToGather: [
-          "Property deed or certificate",
-          "Photos of damage",
-          "Repair estimates",
-          "Records of prior complaints",
+          "Employment contract or offer letter",
+          "Pay stubs and records of hours worked",
+          "Termination letter or notice, if any",
+          "Emails or messages with your employer",
+          "Record of dates — start date, last day, pay period",
         ],
         questionsToAsk: [
-          "Is the neighbor willing to negotiate?",
-          "What is the extent of the damage?",
-          "When did this problem start?",
-          "Have you attempted to communicate?",
+          "What is the deadline to file a complaint with CNESST?",
+          "Do I qualify for wrongful dismissal protection?",
+          "What official process handles this type of issue in Quebec?",
+          "Is there a free or low-cost legal clinic that can review this?",
+        ],
+        trustedSources: [
+          {
+            name: "CNESST",
+            url: "https://www.cnesst.gouv.qc.ca/",
+            description: "Quebec labour standards, workplace rights, and pay-related resources.",
+          },
+          {
+            name: "Éducaloi",
+            url: "https://educaloi.qc.ca/en/",
+            description: "Plain-language legal information for people in Quebec.",
+          },
+        ],
+        disclaimer: "Lawly is not a lawyer. This is organization support, not legal advice.",
+      },
+    },
+    {
+      id: "case_003",
+      problem: "My landlord sent a rent increase notice and I want to refuse it",
+      category: "housing",
+      createdAt: "2026-05-09",
+      lastModified: "2026-05-09",
+      status: "resolved",
+      analysis: {
+        supported: true,
+        scenarioId: "housing_rent_increase",
+        category: "housing",
+        title: "Rent increase or lease modification notice",
+        explanation:
+          "This looks like a rent increase or lease modification issue. The verified rules Lawly can rely on are that the landlord must give notice within the required period, and a tenant who objects must notify the landlord within one month after receiving the notice.",
+        rightsExplanation:
+          "You have the right to refuse a rent increase. If you object, you must notify the landlord in writing within one month after receiving the notice (CCQ art. 1945).",
+        citations: [
+          {
+            label: "Civil Code of Québec — Art. 1945",
+            sourceName: "Civil Code of Québec",
+            articleOrPage: "Article 1945 C.C.Q.",
+            sourceUrl:
+              "https://www.legisquebec.gouv.qc.ca/en/version/cs/ccq-1991?code=se%3A1945",
+            exactExcerpt: "within one month after receiving the notice of modification of the lease",
+            plainRule:
+              "A tenant who objects to a proposed lease modification must notify the landlord within one month after receiving the notice.",
+          },
+        ],
+        timeline: [
+          {
+            title: "Check the date you received the notice",
+            description:
+              "Write down the exact date you received the rent increase notice. The one-month objection deadline starts from this date.",
+            timingLabel: "Today — 1-month clock starts now",
+            urgency: "high",
+            stepType: "source_based",
+          },
+          {
+            title: "Send written objection within one month",
+            description:
+              "If you object, notify the landlord in writing within one month after receiving the notice and keep proof of delivery.",
+            timingLabel: "Within 1 month of receiving notice",
+            urgency: "high",
+            stepType: "source_based",
+          },
+        ],
+        availableDocuments: ["formal_notice", "filing_prep_packet"],
+        missingInformation: ["Date notice was received", "Current rent amount", "Proposed new rent"],
+        keyFacts: [
+          "Write down the exact date you received the notice.",
+          "If you object, respond in writing within one month after receiving the notice.",
+          "Keep proof of your response.",
         ],
         trustedResources: [
           {
-            name: "Quebec Property Law Guide",
-            url: "https://legisquebec.gouv.qc.ca",
-            description: "Civil code provisions on property",
+            name: "Tribunal administratif du logement",
+            url: "https://www.tal.gouv.qc.ca/en/",
+            description: "Quebec's housing tribunal and official housing forms.",
           },
-          {
-            name: "Mediation Services",
-            url: "https://www.mediation.qc.ca",
-            description: "Alternative dispute resolution",
-          },
-        ],
-        documentOptions: [
-          "Property survey",
-          "Arborist assessment",
-          "Contractor quotes for repairs",
         ],
         disclaimer:
-          "Property disputes can become complex. Consider mediation before pursuing legal action.",
+          "Lawly is not a lawyer. This is legal information, not legal advice. Verify deadlines, forms, and the correct filing path before taking action.",
       },
     },
   ],

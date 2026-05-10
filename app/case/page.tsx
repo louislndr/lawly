@@ -9,11 +9,9 @@ import {
   ArrowLeft,
   ArrowRight,
   Loader2,
-  AlertCircle,
   FileText,
   HelpCircle,
   ExternalLink,
-  Clock,
 } from "lucide-react";
 import type {
   CaseData,
@@ -26,18 +24,6 @@ import { LegalAnalysisPanel } from "@/components/LegalAnalysisPanel";
 import { LegalSourceCard } from "@/components/LegalSourceCard";
 import { LegalTimeline } from "@/components/LegalTimeline";
 
-function urgencyLabel(urgency: "low" | "medium" | "high"): string {
-  if (urgency === "high") return "Important";
-  if (urgency === "medium") return "Soon";
-  return "When ready";
-}
-
-function urgencyBadgeClass(urgency: "low" | "medium" | "high"): string {
-  if (urgency === "high") return "bg-green-50 text-green-700 border border-green-200";
-  if (urgency === "medium") return "bg-amber-50 text-amber-700 border border-amber-200";
-  return "bg-gray-100 text-gray-600 border border-gray-200";
-}
-
 export default function CasePage() {
   const router = useRouter();
   const [caseData, setCaseData] = useState<CaseData | null>(null);
@@ -47,7 +33,6 @@ export default function CasePage() {
     const stored = sessionStorage.getItem("lawly_case");
     if (stored) {
       try {
-        // Session storage is the handoff from the homepage form to this client route.
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setCaseData(JSON.parse(stored));
         setPageStatus("ready");
@@ -120,7 +105,10 @@ export default function CasePage() {
               New search
             </button>
 
-            <CaseHeader />
+            <CaseHeader
+              title={analysis.supported ? analysis.title : analysis.title}
+              supported={analysis.supported}
+            />
 
             <div className="mt-6 space-y-5">
               <section className="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] print:hidden">
@@ -171,24 +159,20 @@ export default function CasePage() {
   );
 }
 
-function SupportedView({
-  analysis,
-}: {
-  analysis: SupportedAnalysisResult;
-}) {
+function SupportedView({ analysis }: { analysis: SupportedAnalysisResult }) {
   const primaryCitation = analysis.citations?.[0];
 
   return (
     <>
       <LegalAnalysisPanel
-        summary={analysis.plainLanguageSummary}
+        summary={analysis.explanation}
         rights={analysis.rightsExplanation}
         importantFacts={analysis.keyFacts}
       />
 
       {primaryCitation && <LegalSourceCard citation={primaryCitation} />}
 
-      <LegalTimeline steps={analysis.nextSteps} />
+      <LegalTimeline steps={analysis.timeline} />
 
       <CaseChecklist />
     </>
@@ -198,49 +182,22 @@ function SupportedView({
 function UnsupportedView({ analysis }: { analysis: UnsupportedAnalysisResult }) {
   return (
     <>
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-5 print:hidden">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-7 h-7 rounded-lg bg-amber-200 flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="w-4 h-4 text-amber-700" />
-          </div>
-          <h2 className="font-semibold text-amber-900">What you can do</h2>
-        </div>
-        <p className="text-amber-800 leading-relaxed text-sm">{analysis.safeOrientation}</p>
-      </div>
-
-      {analysis.nextSteps?.length > 0 && (
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-5 shadow-sm print:hidden">
-          <div className="flex items-center gap-2 mb-5">
-            <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-4 h-4 text-amber-600" />
-            </div>
-            <h2 className="font-semibold text-gray-900">Next steps</h2>
-          </div>
-          <ol className="flex flex-col gap-0">
-            {analysis.nextSteps.map((item, i) => (
-              <li key={i} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
-                    {i + 1}
-                  </div>
-                  {i < analysis.nextSteps.length - 1 && (
-                    <div className="w-px flex-1 bg-gray-100 my-2" />
-                  )}
-                </div>
-                <div className={`pb-6 ${i === analysis.nextSteps.length - 1 ? "pb-0" : ""}`}>
-                  <div className="flex flex-wrap items-center gap-2 mb-1.5 mt-1">
-                    <p className="font-semibold text-gray-900 text-sm">{item.title}</p>
-                    <span
-                      className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${urgencyBadgeClass(item.urgency)}`}
-                    >
-                      {urgencyLabel(item.urgency)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500 leading-relaxed">{item.description}</p>
-                </div>
+      {analysis.whatLawlyCanDo?.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-5 print:hidden">
+          <h2 className="font-semibold text-amber-900 mb-3">
+            What Lawly can do for you
+          </h2>
+          <p className="text-amber-800 leading-relaxed text-sm mb-4">
+            {analysis.plainLanguageSummary}
+          </p>
+          <ul className="flex flex-col gap-2">
+            {analysis.whatLawlyCanDo.map((item, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-amber-800">
+                <span className="text-amber-500 mt-1 flex-shrink-0">•</span>
+                {item}
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       )}
 
@@ -282,16 +239,16 @@ function UnsupportedView({ analysis }: { analysis: UnsupportedAnalysisResult }) 
         </div>
       )}
 
-      {analysis.trustedResources?.length > 0 && (
+      {analysis.trustedSources?.length > 0 && (
         <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-5 shadow-sm print:hidden">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
               <ExternalLink className="w-4 h-4 text-green-600" />
             </div>
-            <h2 className="font-semibold text-gray-900">Trusted resources</h2>
+            <h2 className="font-semibold text-gray-900">Trusted sources to check</h2>
           </div>
           <div className="flex flex-col gap-3">
-            {analysis.trustedResources.map((r, i) => (
+            {analysis.trustedSources.map((r, i) => (
               <a
                 key={i}
                 href={r.url}
@@ -314,8 +271,8 @@ function UnsupportedView({ analysis }: { analysis: UnsupportedAnalysisResult }) 
 
       <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-6 text-center print:hidden">
         <p className="text-sm text-gray-500">
-          Lawly does not generate legal documents for this type of case. Contact a legal clinic or
-          trusted resource above before filing anything.
+          Lawly does not generate legal documents for this type of case. Contact a legal
+          clinic or trusted source above before filing anything.
         </p>
       </div>
     </>
